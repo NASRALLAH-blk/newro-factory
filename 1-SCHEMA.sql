@@ -1,4 +1,4 @@
-drop schema if exists `newro-factory-db`;
+DROP SCHEMA IF EXISTS `newro-factory-db`;
   create schema if not exists `newro-factory-db`;
   use `newro-factory-db`;
 

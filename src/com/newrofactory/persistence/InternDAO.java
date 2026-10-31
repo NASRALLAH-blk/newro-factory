@@ -17,7 +17,6 @@ public class InternDAO {
         return instance;
     }
 
-   
     public List<Intern> getAll(int limit, int offset) {
         List<Intern> list = new ArrayList<>();
         String sql = "SELECT id, first_name, last_name, arrival, formation_over, promotion_id FROM intern LIMIT ? OFFSET ?";
@@ -29,41 +28,47 @@ public class InternDAO {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Date fin = rs.getDate("formation_over");
+               
+                Date sqlArrival = rs.getDate("arrival");
+                Date sqlFin = rs.getDate("formation_over");
+                
+                
                 list.add(new Intern(
                     rs.getLong("id"),
                     rs.getString("first_name"),
                     rs.getString("last_name"),
-                    rs.getDate("arrival").toLocalDate(),
-                    fin != null ? fin.toLocalDate() : null,
+                    sqlArrival != null ? sqlArrival.toLocalDate() : null, // Sécurisé
+                    sqlFin != null ? sqlFin.toLocalDate() : null,         // Sécurisé
                     rs.getLong("promotion_id")
                 ));
             }
         } catch (SQLException e) {
-            System.out.println("Erreur SQL: " + e.getMessage());
+            System.out.println("Erreur SQL lors de la lecture: " + e.getMessage());
         }
         return list;
     }
 
-   
     public void add(Intern intern) {
         String sql = "INSERT INTO intern (first_name, last_name, arrival, formation_over, promotion_id) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setString(1, intern.getFirstName());
             ps.setString(2, intern.getLastName());
-            ps.setDate(3, Date.valueOf(intern.getArrival()));
+            
+            
+            ps.setDate(3, intern.getArrival() != null ? Date.valueOf(intern.getArrival()) : null);
             ps.setDate(4, intern.getFormationOver() != null ? Date.valueOf(intern.getFormationOver()) : null);
+            
             ps.setLong(5, intern.getPromotionId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Erreur SQL: " + e.getMessage());
+            System.out.println("Erreur SQL lors de l'ajout: " + e.getMessage());
         }
     }
-
-    
+ 
     public void delete(long id) {
         String sql = "DELETE FROM intern WHERE id = ?";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -71,7 +76,7 @@ public class InternDAO {
             ps.setLong(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Erreur SQL: " + e.getMessage());
+            System.out.println("Erreur SQL lors de la suppression: " + e.getMessage());
         }
     }
 }
